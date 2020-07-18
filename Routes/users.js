@@ -1,20 +1,32 @@
 const express = require('express');
 const app = express();
+const Users = require('../model/users');
 
 app.get('/', (request, response) => {
-    return response.send({message: 'Tudo ok com o GET de Usuários'});
+    Users.find({}, (err, data) =>{
+        if(err) return response.send({error: 'Erro na consulya de usuários'});
+        return response.send(data);
+    });
 });
 
-app.post('/', (request, response) => {
-    return response.send({message: 'Tudo ok com o POST de Usuários'});
-});
+app.post('/create', (request, response) => {
+    const { email, password } = request.body;
+    //VALIDA CAMPOS EMAIL / PASSWORD
+    if (!email || !password) return response.send({ error: 'Dados Insulficientes' });
+    // VALIDA USUÁRIOS
+    Users.findOne({email}, (err, data) =>{
+        if(err) return response.send({error: 'Erro ao buscar usuário!'});
+        if(data) return response.send({error: 'Uusário já registrado'});
 
-app.put('/', (request, response) => {
-    return response.send({message: 'Tudo ok com o PUT de Usuários'});
-});
+        // Cria usuários
+        Users.create(request.body, (err, data) => {
+            if(err) return response.send({error: 'Erro ao criar usuário!'});
 
-app.delete('/', (request, response) => {
-    return response.send({message: 'Tudo ok com o DELETE de Usuários'});
+            // Oculta o password do retorno da requsicão
+            data.password = undefined;
+            return response.send(data);
+        })
+    });
 });
 
 module.exports = app;
