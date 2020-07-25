@@ -22,17 +22,6 @@ router.get('/', async (req, res) => {
     }
 });
 
-// // Lista todos os usuários
-// router.get('/all', async (req, res) => {
-//     try {
-//         const users = await Users.find({});
-//         return res.send(users);
-//     }
-//     catch (err) {
-//         return res.status(500).send({ error: 'Erro na consulta de usuários!' });
-//     }
-// });
-
 // Cria usuários
 router.post('/create', async (req, res) => {
     const { email, password } = req.body;

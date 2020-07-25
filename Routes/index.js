@@ -11,7 +11,6 @@ router.post('/', (req, res) => {
     return res.status(200).send({message: 'Tudo ok com o método POST da raiz!'});
 });
 
-
 router.post('/users', (req, res) => {
     return res.status(200).send(res.data);
 });
