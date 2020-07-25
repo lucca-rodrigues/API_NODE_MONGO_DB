@@ -25,10 +25,10 @@ router.get('/', async (req, res) => {
 // Cria usuários
 router.post('/create', async (req, res) => {
     const { email, password } = req.body;
-    if (!email || !password) return res.send({ error: 'Dados insuficientes!' });
+    if (!email || !password) return res.status(400).send({ error: 'Dados insuficientes!' });
 
     try {
-        if (await Users.findOne({ email })) return res.send({ error: 'Usuário já registrado!'});
+        if (await Users.findOne({ email })) return res.status(400).send({ error: 'Usuário já registrado!'});
 
         const user = await Users.create(req.body);
         user.password = undefined;
@@ -42,7 +42,7 @@ router.post('/create', async (req, res) => {
 // Faz autenticação de usuários
 router.post('/auth', async (req, res) => {
     const { email, password } = req.body;
-    if (!email || !password) return res.send({ error: 'Dados insuficientes!' });
+    if (!email || !password) return res.status(400).send({ error: 'Dados insuficientes!' });
     try {
         const user = await Users.findOne({ email }).select('+password');
         if (!user) return res.status(400).send({ error: 'Usuário não registrado!' });
