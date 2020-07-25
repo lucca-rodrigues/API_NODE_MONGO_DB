@@ -3,15 +3,15 @@ const router = express.Router();
 const Users = require('../model/users');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const config= require('../config/config.js')
 
 
 // Criação do Token
 const createUserToken = (userId) => {
-    return jwt.sign({id: userId}, 'minhasenha2020', {expiresIn: '7d'}); 
-} 
+    return jwt.sign({id: userId}, config.jwt_pass, {expiresIn: config.jwt_expires_in }); 
+}
 
-
-// Lista usuários
+// Lista conteúdo com autenticação
 router.get('/', async (req, res) => {
     try {
         const users = await Users.find({});
@@ -21,6 +21,17 @@ router.get('/', async (req, res) => {
         return res.status(500).send({ error: 'Erro na consulta de usuários!' });
     }
 });
+
+// // Lista todos os usuários
+// router.get('/all', async (req, res) => {
+//     try {
+//         const users = await Users.find({});
+//         return res.send(users);
+//     }
+//     catch (err) {
+//         return res.status(500).send({ error: 'Erro na consulta de usuários!' });
+//     }
+// });
 
 // Cria usuários
 router.post('/create', async (req, res) => {
