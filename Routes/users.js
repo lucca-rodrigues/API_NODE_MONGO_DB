@@ -1,32 +1,62 @@
 const express = require('express');
-const app = express();
+const router = express.Router();
 const Users = require('../model/users');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
-app.get('/', (request, response) => {
-    Users.find({}, (err, data) =>{
-        if(err) return response.send({error: 'Erro na consulya de usuários'});
-        return response.send(data);
-    });
+
+// Criação do Token
+const createUserToken = (userId) => {
+    return jwt.sign({id: userId}, 'minhasenha2020', {expiresIn: '7d'}); 
+} 
+
+
+// Lista usuários
+router.get('/', async (req, res) => {
+    try {
+        const users = await Users.find({});
+        return res.send(users);
+    }
+    catch (err) {
+        return res.send({ error: 'Erro na consulta de usuários!' });
+    }
 });
 
-app.post('/create', (request, response) => {
-    const { email, password } = request.body;
-    //VALIDA CAMPOS EMAIL / PASSWORD
-    if (!email || !password) return response.send({ error: 'Dados Insulficientes' });
-    // VALIDA USUÁRIOS
-    Users.findOne({email}, (err, data) =>{
-        if(err) return response.send({error: 'Erro ao buscar usuário!'});
-        if(data) return response.send({error: 'Uusário já registrado'});
+// Cria usuários
+router.post('/create', async (req, res) => {
+    const { email, password } = req.body;
+    if (!email || !password) return res.send({ error: 'Dados insuficientes!' });
 
-        // Cria usuários
-        Users.create(request.body, (err, data) => {
-            if(err) return response.send({error: 'Erro ao criar usuário!'});
+    try {
+        if (await Users.findOne({ email })) return res.send({ error: 'Usuário já registrado!'});
 
-            // Oculta o password do retorno da requsicão
-            data.password = undefined;
-            return response.send(data);
-        })
-    });
+        const user = await Users.create(req.body);
+        user.password = undefined;
+        return res.send({user, token: createUserToken(user.id)});
+    }
+    catch (err) {
+        return res.send({ error: 'Erro ao buscar usuário!' });
+    }
 });
 
-module.exports = app;
+// Faz autenticação de usuários
+router.post('/auth', async (req, res) => {
+    const { email, password } = req.body;
+    if (!email || !password) return res.send({ error: 'Dados insuficientes!' });
+    try {
+        const user = await Users.findOne({ email }).select('+password');
+        if (!user) return res.send({ error: 'Usuário não registrado!' });
+
+        const pass_ok = await bcrypt.compare(password, user.password);
+
+        if(!pass_ok) return res.send({ error: 'Erro ao autenticar usuário!' });
+
+        user.password = undefined;
+        return res.send({user, token: createUserToken(user.id)});
+    }
+    catch (err) {
+        return res.send({ error: 'Erro ao buscar usuário!' });
+    }
+});
+
+module.exports = router;
