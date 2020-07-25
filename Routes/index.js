@@ -1,20 +1,14 @@
 const express = require('express');
-const app = express();
+const router = express.Router();
+const auth = require('../middlewares/auth');
 
-app.get('/', (request, response) => {
-    return response.send({message: 'Tudo ok com o GET da Raiz'});
+router.get('/', auth, (req, res) => {
+    console.log(res.locals.auth_data);
+    return res.send({message: 'Essa informação é muito importante. Usuários não autorizados não deveriam recebê-la!'});
 });
 
-app.post('/', (request, response) => {
-    return response.send({message: 'Tudo ok com o POST da Raiz'});
+router.post('/', (req, res) => {
+    return res.send({message: 'Tudo ok com o método POST da raiz!'});
 });
 
-app.put('/', (request, response) => {
-    return response.send({message: 'Tudo ok com o PUT da Raiz'});
-});
-
-app.delete('/', (request, response) => {
-    return response.send({message: 'Tudo ok com o DELETE da Raiz'});
-});
-
-module.exports = app;
+module.exports = router;
